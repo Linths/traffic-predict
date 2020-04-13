@@ -5,6 +5,23 @@ import seaborn as sns
 import numpy as np
 from scipy import stats
 from random import randint
+import pickle
+
+TRAVEL_TIME_COMPACT_FILE = "data/travel_times_compact.p"
+
+def storeMinimalTravelTimeData():
+    travel_time_data = []
+    for i in range(1,5):
+        print(f"==========File {i}==========")
+        travel_time_data_current = pd.read_csv(f'../TRANSPORT/NDW/utwente reistijden groot amsterdam  _reistijd_0000{i}.csv', chunksize=1000000)
+        chunk_list = []
+        for chunk in travel_time_data_current:
+            chunk = preprocessTravelTimeData(chunk)
+            chunk_list.append(chunk)
+        travel_time_data.append(pd.concat(chunk_list))
+        print(travel_time_data)
+    pickle.dump(travel_time_data, open(TRAVEL_TIME_COMPACT_FILE, "wb"))
+    return travel_time_data
 
 def readFiles():
     # import data files
@@ -41,12 +58,22 @@ def readFiles():
         # concat the list into dataframe
         travel_concat_all.append(pd.concat(chunk_list))
 
+    for travel_times in travel_concat_all:
+        print(travel_times)
+
     # Each chunk is in df format
     for chunk in intensity_meta:
         # Once the data filtering is done, append the chunk to list
         intensity_meta_list.append(chunk)
     # concat the list into dataframe
     intensity_meta_concat = pd.concat(intensity_meta_list)
+
+def preprocessTravelTimeData(data):
+    data = data[["measurementSiteReference","index","periodStart","periodEnd","numberOfIncompleteInputs","minutesUsed","computationalMethod","travelTimeType","avgTravelTime","generatedSiteName","lengthAffected"]]
+    data[["periodStart", "periodEnd"]] = data[["periodStart", "periodEnd"]].astype("datetime64")
+    data[["numberOfIncompleteInputs","minutesUsed","avgTravelTime","lengthAffected"]] = data[["numberOfIncompleteInputs","minutesUsed","avgTravelTime","lengthAffected"]].astype("float32")
+    data.index = pd.DatetimeIndex(data['periodStart'])
+    return data
 
 def preprocessFlowData(data):
     data = data[["measurementSiteReference","measurementSiteVersion","index","periodStart","numberOfIncompleteInputs","avgVehicleFlow","generatedSiteName"]]
@@ -55,5 +82,9 @@ def preprocessFlowData(data):
 
 
 if __name__ == "__main__":
-    readFiles()
-    preprocessFlowData()
+    try:
+        travel_time_data = pickle.load(open(TRAVEL_TIME_COMPACT_FILE, "rb"))
+    except:
+        travel_time_data = storeMinimalTravelTimeData()
+    plt.plot(travel_time_data["avgTravelTime"])
+    plt.show()
