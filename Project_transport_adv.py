@@ -9,14 +9,14 @@ from random import randint
 def readFiles():
     # import data files
     # read the large csv file with specified chunksize
-    intensity_meta = pd.read_csv(r'utwente intensiteiten groot amsterdam  1 dag met metadata (2)_intensiteit_00001.csv', chunksize=1000000, low_memory=False)
+    intensity_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente intensiteiten groot amsterdam  1 dag met metadata (2)_intensiteit_00001.csv', chunksize=1000000, low_memory=False)
 
     travel_times_all = []
     for i in range(1,5):
-        travel_times_all.append(pd.read_csv(f'utwente reistijden groot amsterdam  _reistijd_0000{i}.csv', chunksize=1000000, low_memory=False))
+        travel_times_all.append(pd.read_csv(f'../TRANSPORT/NDW/utwente reistijden groot amsterdam  _reistijd_0000{i}.csv', chunksize=1000000, low_memory=False))
 
-    travel_times_meta = pd.read_csv(r'utwente reistijden groot amsterdam  1 dag met metadata_reistijd_00001.csv', chunksize=1000000, low_memory=False)
-    speed_meta = pd.read_csv(r'utwente snelheden groot amsterdam  1 dag met metadata_snelheid_00001.csv', chunksize=1000000, low_memory=False)
+    travel_times_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente reistijden groot amsterdam  1 dag met metadata_reistijd_00001.csv', chunksize=1000000, low_memory=False)
+    speed_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente snelheden groot amsterdam  1 dag met metadata_snelheid_00001.csv', chunksize=1000000, low_memory=False)
 
     # append each chunk df here
     intensity_meta_list = []
