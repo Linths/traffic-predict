@@ -108,31 +108,58 @@ def preprocessFlowData(data):
     return data
 
 def predictTT(ts):
-    plt.plot(ts, color='blue')
+    DAILY = False
+    HOURLY = False
+
+    # plt.plot(ts, color='blue')
     ts = ts.replace(-1.0, np.nan) #0.000001)
     ts = ts.interpolate(method='time')
-    plt.plot(ts, color='orange')
-    plt.title("Interpolation")
+    # plt.plot(ts, color='orange')
+    # plt.title("Interpolation")
+    # plt.show()
+    # plt.close()
+    ts.index = pd.DatetimeIndex(ts.index).to_period('min') #, freq='m')
+    if DAILY:
+        ts = ts.resample('D').mean()
+    elif HOURLY:
+        ts = ts.resample('h').mean()
+    ts.plot()
     plt.show()
     plt.close()
-    ts.index = pd.DatetimeIndex(ts.index) #.to_period('m') #, freq='m')
     # ts.dropna(inplace=True)
     # ts = ts.to_numpy()
     ts_log = np.log(ts)
-    plt.plot(ts_log)
+    ts_log.index = ts.index
+    ts_log.plot()
     plt.show()
     plt.close()
     ts_log_diff = ts_log - ts_log.shift()
+    ts_log_diff.index = ts.index
     ts_log_diff.dropna(inplace=True)
     # ts_log_diff = ts_log - np.roll(ts_log, 1)
-    plt.plot(ts_log_diff)
+    ts_log_diff.plot()
     plt.show()
     plt.close()
-    predict.plotAcfPacf(ts_log_diff)
-    # predict.plotAcfPacf(ts_log)
-    p = 2 #2.6
-    q = 2 #2.35
-    predict.arima(ts, ts_log, ts_log_diff, p, 1, q)
+
+    if DAILY:
+        forget_last = 7
+    elif HOURLY:
+        forget_last = 24 * 7
+    else:
+        forget_last = 60 * 24 * 7
+    predict.plotAcfPacf(ts_log_diff[:-forget_last])
+    
+    # predict.plotAcfPacf(ts_log_diff)
+    if DAILY:
+        p = 1
+        q = 1
+    elif HOURLY:
+        p = 9
+        q = 3
+    else:
+        p = 3 #3 #2.6
+        q = 3 #2 #2.35
+    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last)
 
 if __name__ == "__main__":
     print("Started")
