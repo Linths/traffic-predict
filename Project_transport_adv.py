@@ -53,6 +53,7 @@ def preprocessFlowData(data):
     data[["measurementSiteReference", "numberOfIncompleteInputs", "avgVehicleFlow"]] = data[["measurementSiteReference", "numberOfIncompleteInputs", "avgVehicleFlow"]].astype('float32')
     data["periodStart"] = data["periodStart"].astype("datetime64")
 
+
 if __name__ == "__main__":
     readFiles()
     preprocessFlowData()
