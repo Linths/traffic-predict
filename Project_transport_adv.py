@@ -19,7 +19,8 @@ def storeMinimalTravelTimeData():
             chunk = preprocessTravelTimeData(chunk)
             chunk_list.append(chunk)
         travel_time_data.append(pd.concat(chunk_list))
-        print(travel_time_data)
+        # print(travel_time_data)
+    travel_time_data = pd.concat(travel_time_data)
     pickle.dump(travel_time_data, open(TRAVEL_TIME_COMPACT_FILE, "wb"))
     return travel_time_data
 
@@ -79,11 +80,13 @@ def preprocessFlowData(data):
     data = data[["measurementSiteReference","measurementSiteVersion","index","periodStart","numberOfIncompleteInputs","avgVehicleFlow","generatedSiteName"]]
     data[["measurementSiteReference", "numberOfIncompleteInputs", "avgVehicleFlow"]] = data[["measurementSiteReference", "numberOfIncompleteInputs", "avgVehicleFlow"]].astype('float32')
     data["periodStart"] = data["periodStart"].astype("datetime64")
+    return data
 
 if __name__ == "__main__":
     try:
         travel_time_data = pickle.load(open(TRAVEL_TIME_COMPACT_FILE, "rb"))
     except:
         travel_time_data = storeMinimalTravelTimeData()
-    plt.plot(travel_time_data["avgTravelTime"])
-    plt.show()
+    # travel_time_watergraafsmeer = travel_time_data.loc[travel_time_data.measurementSiteReference == "RWS01_MONIBAS_0011hrl0036ra0"]
+    # plt.plot(travel_time_watergraafsmeer["avgTravelTime"])
+    # plt.show()
