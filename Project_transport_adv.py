@@ -81,7 +81,6 @@ def preprocessFlowData(data):
     data["periodStart"] = data["periodStart"].astype("datetime64")
 
 if __name__ == "__main__":
-    # readFiles()
     try:
         travel_time_data = pickle.load(open(TRAVEL_TIME_COMPACT_FILE, "rb"))
     except:
