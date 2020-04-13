@@ -127,6 +127,7 @@ def predictTT(ts):
     elif SHORTLY:
         ts = ts.resample('5min').mean()
     ts.plot()
+    plt.title("Travel time with interpolation (and possibly interval conversion)")
     plt.show()
     plt.close()
     # ts.dropna(inplace=True)
@@ -134,6 +135,7 @@ def predictTT(ts):
     ts_log = np.log(ts)
     ts_log.index = ts.index
     ts_log.plot()
+    plt.title("Travel time (log)")
     plt.show()
     plt.close()
     ts_log_diff = ts_log - ts_log.shift()
@@ -141,6 +143,7 @@ def predictTT(ts):
     ts_log_diff.dropna(inplace=True)
     # ts_log_diff = ts_log - np.roll(ts_log, 1)
     ts_log_diff.plot()
+    plt.title("Travel time (log diff)")
     plt.show()
     plt.close()
 
@@ -149,7 +152,7 @@ def predictTT(ts):
     elif HOURLY:
         forget_last = 24 * 7
     elif SHORTLY:
-        forget_last = 12 * 23 * 7
+        forget_last = 12 * 23 * 7 #-276 -312 -10
     else:
         forget_last = 60 * 24 * 7
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
@@ -186,8 +189,9 @@ if __name__ == "__main__":
         travel_time_watergraafsmeer = storeTTWatergraafsmeer()
     print(travel_time_watergraafsmeer.head)
     ts = travel_time_watergraafsmeer["avgTravelTime"]
-    # plt.plot(ts)
-    # plt.show()
-    # plt.close()
+    plt.plot(ts)
+    plt.title("Original travel time of Watergraafsmeer")
+    plt.show()
+    plt.close()
     predictTT(ts)
 
