@@ -110,6 +110,7 @@ def preprocessFlowData(data):
 def predictTT(ts):
     DAILY = False
     HOURLY = False
+    SHORTLY = True
 
     # plt.plot(ts, color='blue')
     ts = ts.replace(-1.0, np.nan) #0.000001)
@@ -123,6 +124,8 @@ def predictTT(ts):
         ts = ts.resample('D').mean()
     elif HOURLY:
         ts = ts.resample('h').mean()
+    elif SHORTLY:
+        ts = ts.resample('5min').mean()
     ts.plot()
     plt.show()
     plt.close()
@@ -145,6 +148,8 @@ def predictTT(ts):
         forget_last = 7
     elif HOURLY:
         forget_last = 24 * 7
+    elif SHORTLY:
+        forget_last = 12 * 23 * 7
     else:
         forget_last = 60 * 24 * 7
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
@@ -154,8 +159,11 @@ def predictTT(ts):
         p = 1
         q = 1
     elif HOURLY:
-        p = 9
-        q = 3
+        p = 1 #9
+        q = 1 #3
+    elif SHORTLY:
+        p = 2
+        q = 2
     else:
         p = 3 #3 #2.6
         q = 3 #2 #2.35

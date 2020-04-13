@@ -45,11 +45,13 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last):
     # xx = ts_log.iloc[-1].loc[:, "periodStart"].values #['periodStart']
     plt.axvline(x=last_steps-forget_last, color='red')
     plt.show()
+    plt.close()
+
     # MA
     model = ARIMA(trainset, order=(0, d, q))  
     results_MA = model.fit(disp=-1)  
-    ts_log_diff.plot()
-    plt.plot(results_MA.fittedvalues, color='red')
+    plt.plot(ts_log_diff.to_numpy())
+    plt.plot(results_MA.fittedvalues.to_numpy(), color='red')
     plt.title('RSS: %.4f'% sum((results_AR.fittedvalues-ts_log_diff)**2))
     plt.show()
     predicted = results_MA.forecast(steps=new_steps)
@@ -59,11 +61,12 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last):
     plt.plot(range(last_steps-forget_last, last_steps), np.exp(predicted[0]), color='orange')
     plt.axvline(x=last_steps-forget_last, color='red')
     plt.show()
+    
     # ARIMA
     model = ARIMA(trainset, order=(p, d, q))  
     results_ARIMA = model.fit(disp=-1)  
-    ts_log_diff.plot()
-    plt.plot(results_ARIMA.fittedvalues, color='red')
+    plt.plot(ts_log_diff.to_numpy())
+    plt.plot(results_MA.fittedvalues.to_numpy(), color='red')
     plt.title('RSS: %.4f'% sum((results_AR.fittedvalues-ts_log_diff)**2))
     plt.show()
     predicted = results_ARIMA.forecast(steps=new_steps)
@@ -79,7 +82,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last):
     predictions_ARIMA_log = pd.Series(ts_log.iloc[0], index=ts_log.index)
     predictions_ARIMA_log = predictions_ARIMA_log.add(predictions_ARIMA_diff_cumsum, fill_value=0)
     predictions_ARIMA = np.exp(predictions_ARIMA_log)
-    ts.plot()
-    plt.plot(predictions_ARIMA)
+    plt.plot(ts.to_numpy(), color='blue')
+    plt.plot(predictions_ARIMA.to_numpy(), color='orange')
     plt.title('RMSE: %.4f'% np.sqrt(sum((predictions_ARIMA-ts)**2)/len(ts)))
     plt.show()
