@@ -10,6 +10,7 @@ import predict
 
 TT_FILE = "data/travel_times_compact.p"
 TT_WATERGRAAFSMEER_FILE = "data/travel_times_compact_watergraafsmeer.p"
+TT_META = "data/travel_times_meta.p"
 
 '''Takes the raw travel times data and stores it in a more efficient dataframe.'''
 def storeTT():
@@ -53,14 +54,14 @@ def readFiles():
         travel_times_all.append(pd.read_csv(f'../TRANSPORT/NDW/utwente reistijden groot amsterdam  _reistijd_0000{i}.csv', chunksize=1000000, low_memory=False))
 
     travel_times_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente reistijden groot amsterdam  1 dag met metadata_reistijd_00001.csv', chunksize=1000000, low_memory=False)
-    speed_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente snelheden groot amsterdam  1 dag met metadata_snelheid_00001.csv', chunksize=1000000, low_memory=False)
+    #speed_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente snelheden groot amsterdam  1 dag met metadata_snelheid_00001.csv', chunksize=1000000, low_memory=False)
 
     # append each chunk df here
     intensity_meta_list = []
     travel_times_meta_list = []
     speed_meta_list = []
 
-    # Each chunk is in df format
+    # # Each chunk is in df format
     for chunk in intensity_meta:
         # Once the data filtering is done, append the chunk to list
         intensity_meta_list.append(chunk)
@@ -87,6 +88,7 @@ def readFiles():
         travel_times_meta_list.append(chunk)
     # concat the list into dataframe
     travel_times_meta_concat = pd.concat(travel_times_meta_list)
+    pickle.dump(travel_times_meta_concat, open(TT_META, "wb"))
 
 def preprocessTT(data):
     data = data.loc[:, ["measurementSiteReference","index","periodStart","periodEnd","numberOfIncompleteInputs","minutesUsed","computationalMethod","travelTimeType","avgTravelTime","generatedSiteName","lengthAffected"]]
@@ -182,26 +184,44 @@ def predictTT(ts):
 if __name__ == "__main__":
     print("Started")
     
-    # Load all data
+    #Load all data
     # try:
     #     travel_time_data = pd.read_pickle(TT_FILE)
     #     print("Success!")
     # except:
     #     print("Couldn't find compact travel time file.")
     #     travel_time_data = storeTT()
-    
+    #
     # Load watergraafsmeer
-    try:
-        travel_time_watergraafsmeer = pd.read_pickle(TT_WATERGRAAFSMEER_FILE)
-        print("Success!")
-    except:
-        print("Couldn't find compact travel time file.")
-        travel_time_watergraafsmeer = storeTTWatergraafsmeer()
-    print(travel_time_watergraafsmeer.head)
-    ts = travel_time_watergraafsmeer["avgTravelTime"]
-    plt.plot(ts)
-    plt.title("Original travel time of Watergraafsmeer")
-    plt.show()
-    plt.close()
-    predictTT(ts)
-    checkStationarity(ts)
+    # try:
+    #     travel_time_watergraafsmeer = pd.read_pickle(TT_WATERGRAAFSMEER_FILE)
+    #     print("Success!")
+    # except:
+    #     print("Couldn't find compact travel time file.")
+    #     travel_time_watergraafsmeer = storeTTWatergraafsmeer()
+    # print(travel_time_watergraafsmeer.head)
+    #
+    # try:
+    #     travel_time_meta = pd.read_pickle(TT_META)
+    #     print("Success!")
+    # except:
+    #     print("Couldn't find compact travel time file.")
+    #     travel_time_meta = readFiles()
+    #ts = travel_time_watergraafsmeer["avgTravelTime"]
+    #plt.plot(ts)
+    #plt.title("Original travel time of Watergraafsmeer")
+    #plt.show()
+    #plt.close()
+    #predictTT(ts)
+    #checkStationarity(ts)
+    #readFiles()
+
+    picklefile1 = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
+    picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
+    print('Number of rows for watergraafsmeer')
+    print(picklefile1.shape[0])
+    print('Number of rows for all')
+    print(picklefile2.shape[0])
+    travel_times_meta_new = preprocessTT(picklefile2)
+    final_travel_times = pd.merge(picklefile1,travel_times_meta_new, on='measurementSiteReference')
+    print(final_travel_times)
