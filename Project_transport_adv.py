@@ -107,10 +107,16 @@ def preprocessFlowData(data):
     data["periodStart"] = data["periodStart"].astype("datetime64")
     return data
 
+def checkStationarity(ts):
+    # Check stationarity of time signal
+    return
+
 def predictTT(ts):
+    # If you do not want to change intervals, put everything on False
+    # If you want to change the signal to a certain interval, set only that one to True
     DAILY = False
     HOURLY = False
-    SHORTLY = True
+    SHORTLY = True # Every 5 minutes
 
     # plt.plot(ts, color='blue')
     ts = ts.replace(-1.0, np.nan) #0.000001)
@@ -174,13 +180,16 @@ def predictTT(ts):
 
 if __name__ == "__main__":
     print("Started")
+    
+    # Load all data
     # try:
     #     travel_time_data = pd.read_pickle(TT_FILE)
     #     print("Success!")
     # except:
     #     print("Couldn't find compact travel time file.")
     #     travel_time_data = storeTT()
-    # travel_time_watergraafsmeer = travel_time_data.loc[travel_time_data.measurementSiteReference == "RWS01_MONIBAS_0011hrl0036ra0"]
+    
+    # Load watergraafsmeer
     try:
         travel_time_watergraafsmeer = pd.read_pickle(TT_WATERGRAAFSMEER_FILE)
         print("Success!")
