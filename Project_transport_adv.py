@@ -115,23 +115,34 @@ def predictTT(ts):
     # If you do not want to change intervals, put everything on False
     # If you want to change the signal to a certain interval, set only that one to True
     DAILY = False
-    HOURLY = False
-    SHORTLY = True # Every 5 minutes
+    HOURLY = True
+    HALFHOURLY = False
+    SHORTLY = False # Every 5 minutes
 
     # plt.plot(ts, color='blue')
     ts = ts.replace(-1.0, np.nan) #0.000001)
     ts = ts.interpolate(method='time')
-    # plt.plot(ts, color='orange')
-    # plt.title("Interpolation")
-    # plt.show()
     # plt.close()
     ts.index = pd.DatetimeIndex(ts.index).to_period('min') #, freq='m')
     if DAILY:
         ts = ts.resample('D').mean()
+        fs = 1/(60*60*24)
     elif HOURLY:
         ts = ts.resample('h').mean()
+        fs = 1/(60*60)
+    elif HALFHOURLY:
+        ts = ts.resample('30min').mean()
+        fs = 1/(60*30)
     elif SHORTLY:
         ts = ts.resample('5min').mean()
+        fs = 1/(60*5)
+    else:
+        fs = 1/60
+    
+    plt.plot(ts.index.to_timestamp(), ts, color='blue')
+    plt.plot(ts.index.to_timestamp(), ts, color='orange') #.shift(20)
+    plt.title("Interpolation")
+    plt.show()
     ts.plot()
     plt.title("Travel time with interpolation (and possibly interval conversion)")
     plt.show()
@@ -157,26 +168,70 @@ def predictTT(ts):
         forget_last = 7
     elif HOURLY:
         forget_last = 24 * 7
+    elif HALFHOURLY:
+        forget_last = 24 * 7 * 2
     elif SHORTLY:
         forget_last = 12 * 23 * 7 #-276 -312 -10
     else:
         forget_last = 60 * 24 * 7
+    printPopularFrequencies(ts[:-forget_last], fs)
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
     
     # predict.plotAcfPacf(ts_log_diff)
     if DAILY:
         p = 1
         q = 1
+        q_tuple = None
     elif HOURLY:
         p = 1 #9
         q = 1 #3
+        q_tuple = 8*[0]
+        q_tuple[1-1] = 1
+        q_tuple[8-1] = 1
+        q_tuple = tuple(q_tuple)
+    elif HALFHOURLY:
+        p = 1
+        q = 1
+        q_tuple = None
     elif SHORTLY:
         p = 2
         q = 2
+        q_tuple = None
     else:
         p = 3 #3 #2.6
         q = 3 #2 #2.35
-    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last)
+        # Assume daily and weekly patterns
+        # Periodicity is 60*24 and 60*24*7
+        # q_tuple = 60*24*7*[0]
+        # q_tuple = 60*24*[0]
+        q_tuple = 60*[0]
+        q_tuple[3-1] = 1
+        q_tuple[60-1] = 1
+        # q_tuple[60*24-1] = 1
+        # q_tuple[60*24*7-1] = 1
+        q_tuple = tuple(q_tuple)
+    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, q_tuple)
+
+def applyFFT(ts, fs=1/60):
+    signal = ts.copy()
+    signal = signal - np.mean(signal)
+    f = np.fft.fft(signal)
+    x = np.fft.fftfreq(len(signal), d=1/fs)
+    return x, abs(f)/len(signal)
+
+def printPopularFrequencies(ts, fs):
+    x, y = applyFFT(ts, fs)
+    i = 0
+    for popular_freq, amplitude in sorted(zip(x,y), reverse=True, key=lambda x: x[1])[:6]:
+        if i%2 == 0:
+            print(f"#{i//2+1} most popular frequency is every {(1/popular_freq)/60/60} hours")
+        i += 1
+    plt.plot(x, y)
+    ax = plt.gca()
+    ax.set_xlim(0)
+    plt.title("DFT of travel time of Watergraafsmeer")
+    plt.show()
+    plt.close()
 
 if __name__ == "__main__":
     print("Started")
@@ -197,11 +252,13 @@ if __name__ == "__main__":
         print("Couldn't find compact travel time file.")
         travel_time_watergraafsmeer = storeTTWatergraafsmeer()
     print(travel_time_watergraafsmeer.head)
+    
     ts = travel_time_watergraafsmeer["avgTravelTime"]
     plt.plot(ts)
     plt.title("Original travel time of Watergraafsmeer")
     plt.show()
     plt.close()
+
     predictTT(ts)
     checkStationarity(ts)
 
