@@ -7,6 +7,7 @@ from scipy import stats
 from random import randint
 import pickle
 import predict
+from Remove_seasonality import check_stationarity, removeSeasonDecomposition, removeSeasonDifferencing
 
 TT_FILE = "data/travel_times_compact.p"
 TT_WATERGRAAFSMEER_FILE = "data/travel_times_compact_watergraafsmeer.p"
@@ -217,11 +218,13 @@ if __name__ == "__main__":
     #readFiles()
 
     picklefile1 = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
-    picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
-    print('Number of rows for watergraafsmeer')
-    print(picklefile1.shape[0])
-    print('Number of rows for all')
-    print(picklefile2.shape[0])
-    travel_times_meta_new = preprocessTT(picklefile2)
-    final_travel_times = pd.merge(picklefile1,travel_times_meta_new, on='measurementSiteReference')
-    print(final_travel_times)
+    my_try = check_stationarity(picklefile1["avgTravelTime"])
+
+    # picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
+    # print('Number of rows for watergraafsmeer')
+    # print(picklefile1.shape[0])
+    # print('Number of rows for all')
+    # print(picklefile2.shape[0])
+    # travel_times_meta_new = preprocessTT(picklefile2)
+    # final_travel_times = pd.merge(picklefile1,travel_times_meta_new, on='measurementSiteReference')
+    # print(final_travel_times)
