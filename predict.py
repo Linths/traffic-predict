@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import acf, pacf
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
+from tbats import TBATS, BATS
 
 def plotAcfPacf(ts_log_diff, nlags=20):
     lag_acf = acf(ts_log_diff, nlags=nlags)
@@ -119,13 +120,37 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None):
     # plt.plot(np.append(ts_log[-last_steps:-forget_last], predicted[0]))
     # plt.plot(np.exp(np.append(ts_log[-last_steps:-forget_last], predicted[0])), color='orange')
     plt.plot(range(0, last_steps), np.exp(ts_log).to_numpy(), color='blue')
-    xs = range(last_steps-forget_last, last_steps)
-    ys = np.exp(predicted)
-    plt.plot(xs, ys, color='orange')
-    ci = predicted[2]
+    plt.plot(range(last_steps-forget_last, last_steps), np.exp(predicted), color='orange')
+    # ci = predicted[2]
     # ax = plt.gca()
     # ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci[:,0]), np.exp(ci[:,1]), color='b', alpha=.1)
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
     plt.title(f"SARIMAX prediction of travel time")
     plt.show()
+
+def tbats(ts, ts_log, ts_log_diff, forget_last, periods):
+    last_steps = len(ts_log) #60 * 24
+    new_steps = forget_last
+    trainset = ts_log[:-forget_last]
+
+    # Fit the model
+    estimator = TBATS(
+        seasonal_periods=periods#,
+        # use_arma_errors=False,  # shall try only models without ARMA
+        # use_box_cox=False  # will not use Box-Cox
+    )
+    model = estimator.fit(trainset)
+    # Forecast 365 days ahead
+    predicted = model.forecast(steps=forget_last, confidence_level=0.95)
+    plt.plot(range(0, last_steps), np.exp(ts_log).to_numpy(), color='blue')
+    plt.plot(range(last_steps-forget_last, last_steps), np.exp(predicted[0]), color='orange')
+    ci = predicted[1]
+    ax = plt.gca()
+    ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci['lower_bound']), np.exp(ci['upper_bound']), color='b', alpha=.1)
+    plt.ylim(-2, np.max(350))
+    plt.axvline(x=last_steps-forget_last, color='red')
+    plt.title(f"TBATS prediction of travel time")
+    plt.show()
+    print(model.summary())
+    # print(predicted)

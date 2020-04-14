@@ -193,6 +193,7 @@ def predictTT(ts):
         q_tuple[1-1] = 1
         q_tuple[8-1] = 1
         q_tuple = tuple(q_tuple)
+        periods = (8, 24, 4.8, 24*7)
     elif HALFHOURLY:
         p = 1
         q = 1
@@ -214,7 +215,9 @@ def predictTT(ts):
         # q_tuple[60*24-1] = 1
         # q_tuple[60*24*7-1] = 1
         q_tuple = tuple(q_tuple)
-    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, q_tuple)
+        periods = (8*60, 24*60, 4.8*60, 24*7*60)
+    # predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, q_tuple)
+    predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
     signal = ts.copy()
@@ -226,9 +229,9 @@ def applyFFT(ts, fs=1/60):
 def printPopularFrequencies(ts, fs):
     x, y = applyFFT(ts, fs)
     i = 0
-    for popular_freq, amplitude in sorted(zip(x,y), reverse=True, key=lambda x: x[1])[:6]:
+    for popular_freq, amplitude in sorted(zip(x,y), reverse=True, key=lambda x: x[1])[:200]:
         if i%2 == 0:
-            print(f"#{i//2+1} most popular frequency is every {(1/popular_freq)/60/60} hours")
+            print(f"#{i//2+1} most popular frequency is every {(1/popular_freq)/60/60} hours [{amplitude}]")
         i += 1
     plt.plot(x, y)
     ax = plt.gca()
