@@ -19,7 +19,8 @@ def storeMinimalTravelTimeData():
             chunk = preprocessTravelTimeData(chunk)
             chunk_list.append(chunk)
         travel_time_data.append(pd.concat(chunk_list))
-        print(travel_time_data)
+        # print(travel_time_data)
+    travel_time_data = pd.concat(travel_time_data)
     pickle.dump(travel_time_data, open(TRAVEL_TIME_COMPACT_FILE, "wb"))
     return travel_time_data
 
@@ -58,15 +59,15 @@ def readFiles():
         # concat the list into dataframe
         travel_concat_all.append(pd.concat(chunk_list))
 
-    for travel_times in travel_concat_all:
-        print(travel_times)
+    # for travel_times in travel_concat_all:
+    #     print(travel_times)
 
     # Each chunk is in df format
-    for chunk in intensity_meta:
+    for chunk in travel_times_meta:
         # Once the data filtering is done, append the chunk to list
-        intensity_meta_list.append(chunk)
+        travel_times_meta_list.append(chunk)
     # concat the list into dataframe
-    intensity_meta_concat = pd.concat(intensity_meta_list)
+    travel_times_meta_concat = pd.concat(travel_times_meta_list)
 
 def preprocessTravelTimeData(data):
     data = data[["measurementSiteReference","index","periodStart","periodEnd","numberOfIncompleteInputs","minutesUsed","computationalMethod","travelTimeType","avgTravelTime","generatedSiteName","lengthAffected"]]
@@ -80,11 +81,48 @@ def preprocessFlowData(data):
     data[["measurementSiteReference", "numberOfIncompleteInputs", "avgVehicleFlow"]] = data[["measurementSiteReference", "numberOfIncompleteInputs", "avgVehicleFlow"]].astype('float32')
     data["periodStart"] = data["periodStart"].astype("datetime64")
 
+def extractTrialLocation():
+    # travel_times_comp = pd.read_pickle(r'data/travel_times_compact.p')
+    # preprocessFlowData(travel_times_comp)
+    travel_times_all = []
+    for i in range(1, 5):
+        travel_times_all.append(
+            pd.read_csv(f'../TRANSPORT/NDW/utwente reistijden groot amsterdam  _reistijd_0000{i}.csv',
+                        chunksize=1000000, low_memory=False))
+
+    travel_concat_all = []
+    for travel_times in travel_times_all:
+
+        # Each chunk is in df format
+        chunk_list = []
+        for chunk in travel_times:
+            # Once the data filtering is done, append the chunk to list
+            chunk_list.append(chunk)
+        # concat the list into dataframe
+        travel_concat_all.append(pd.concat(chunk_list))
+
+    print(travel_concat_all)
+
+    travel_times_meta_list = []
+    travel_times_meta = pd.read_csv(
+        r'../TRANSPORT/NDW/utwente reistijden groot amsterdam  1 dag met metadata_reistijd_00001.csv',
+        chunksize=1000000, low_memory=False)
+    for chunk in travel_times_meta:
+        # Once the data filtering is done, append the chunk to list
+        travel_times_meta_list.append(chunk)
+    # concat the list into dataframe
+    travel_times_meta_concat = pd.concat(travel_times_meta_list)
+
+    # travel_times_comp = pd.DataFrame(data = travel_times_comp)
+    #
+    # # merge two dataframes of metadata and regular data
+    merged_travel_times = travel_times_meta_concat.merge(travel_concat_all, on='measurementSiteReference')
+    print(merged_travel_times)
 
 if __name__ == "__main__":
-    try:
-        travel_time_data = pickle.load(open(TRAVEL_TIME_COMPACT_FILE, "rb"))
-    except:
-        travel_time_data = storeMinimalTravelTimeData()
-    plt.plot(travel_time_data["avgTravelTime"])
-    plt.show()
+    # try:
+    #     travel_time_data = pickle.load(open(TRAVEL_TIME_COMPACT_FILE, "rb"))
+    # except:
+    #     travel_time_data = storeMinimalTravelTimeData()
+    #readFiles()
+    extractTrialLocation()
