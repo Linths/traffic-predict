@@ -7,9 +7,11 @@ from scipy import stats
 from random import randint
 import pickle
 import predict
+from Remove_seasonality import check_stationarity, removeSeasonDecomposition, removeSeasonDifferencing
 
 TT_FILE = "data/travel_times_compact.p"
 TT_WATERGRAAFSMEER_FILE = "data/travel_times_compact_watergraafsmeer.p"
+TT_META = "data/travel_times_meta.p"
 
 '''Takes the raw travel times data and stores it in a more efficient dataframe.'''
 def storeTT():
@@ -21,6 +23,7 @@ def storeTT():
         for chunk in tt_current:
             chunk = preprocessTT(chunk)
             chunk_list.append(chunk)
+
         tt_all.append(pd.concat(chunk_list))
         # print(tt_all)
     tt_all = pd.concat(tt_all)
@@ -52,14 +55,14 @@ def readFiles():
         travel_times_all.append(pd.read_csv(f'../TRANSPORT/NDW/utwente reistijden groot amsterdam  _reistijd_0000{i}.csv', chunksize=1000000, low_memory=False))
 
     travel_times_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente reistijden groot amsterdam  1 dag met metadata_reistijd_00001.csv', chunksize=1000000, low_memory=False)
-    speed_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente snelheden groot amsterdam  1 dag met metadata_snelheid_00001.csv', chunksize=1000000, low_memory=False)
+    #speed_meta = pd.read_csv(r'../TRANSPORT/NDW/utwente snelheden groot amsterdam  1 dag met metadata_snelheid_00001.csv', chunksize=1000000, low_memory=False)
 
     # append each chunk df here
     intensity_meta_list = []
     travel_times_meta_list = []
     speed_meta_list = []
 
-    # Each chunk is in df format
+    # # Each chunk is in df format
     for chunk in intensity_meta:
         # Once the data filtering is done, append the chunk to list
         intensity_meta_list.append(chunk)
@@ -77,15 +80,16 @@ def readFiles():
         # concat the list into dataframe
         travel_concat_all.append(pd.concat(chunk_list))
 
-    for travel_times in travel_concat_all:
-        print(travel_times)
+    # for travel_times in travel_concat_all:
+    #     print(travel_times)
 
     # Each chunk is in df format
-    for chunk in intensity_meta:
+    for chunk in travel_times_meta:
         # Once the data filtering is done, append the chunk to list
-        intensity_meta_list.append(chunk)
+        travel_times_meta_list.append(chunk)
     # concat the list into dataframe
-    intensity_meta_concat = pd.concat(intensity_meta_list)
+    travel_times_meta_concat = pd.concat(travel_times_meta_list)
+    pickle.dump(travel_times_meta_concat, open(TT_META, "wb"))
 
 def preprocessTT(data):
     data = data.loc[:, ["measurementSiteReference","index","periodStart","periodEnd","numberOfIncompleteInputs","minutesUsed","computationalMethod","travelTimeType","avgTravelTime","generatedSiteName","lengthAffected"]]
@@ -262,3 +266,22 @@ if __name__ == "__main__":
     predictTT(ts)
     checkStationarity(ts)
 
+    # try:
+    #     travel_time_meta = pd.read_pickle(TT_META)
+    #     print("Success!")
+    # except:
+    #     print("Couldn't find compact travel time file.")
+    #     travel_time_meta = readFiles()
+    #readFiles()
+
+    # picklefile1 = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
+    # my_try = check_stationarity(picklefile1["avgTravelTime"])
+
+    # picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
+    # print('Number of rows for watergraafsmeer')
+    # print(picklefile1.shape[0])
+    # print('Number of rows for all')
+    # print(picklefile2.shape[0])
+    # travel_times_meta_new = preprocessTT(picklefile2)
+    # final_travel_times = pd.merge(picklefile1,travel_times_meta_new, on='measurementSiteReference')
+    # print(final_travel_times)
