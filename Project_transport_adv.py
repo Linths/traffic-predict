@@ -242,24 +242,8 @@ def printPopularFrequencies(ts, fs):
 
 if __name__ == "__main__":
     print("Started")
-    
-    # Load all data
-    # try:
-    #     travel_time_data = pd.read_pickle(TT_FILE)
-    #     print("Success!")
-    # except:
-    #     print("Couldn't find compact travel time file.")
-    #     travel_time_data = storeTT()
-    
-    # Load watergraafsmeer
-    try:
-        travel_time_watergraafsmeer = pd.read_pickle(TT_WATERGRAAFSMEER_FILE)
-        print("Success!")
-    except:
-        print("Couldn't find compact travel time file.")
-        travel_time_watergraafsmeer = storeTTWatergraafsmeer()
-    print(travel_time_watergraafsmeer.head)
-    
+
+    travel_time_watergraafsmeer = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
     ts = travel_time_watergraafsmeer["avgTravelTime"]
     plt.plot(ts)
     plt.title("Original travel time of Watergraafsmeer")
@@ -269,6 +253,35 @@ if __name__ == "__main__":
     predictTT(ts)
     checkStationarity(ts)
 
+    picklefile1 = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
+    # my_try = check_stationarity(picklefile1["avgTravelTime"])
+
+    picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
+    # print('Number of rows for watergraafsmeer')
+    # print(picklefile1.shape[0])
+    # print('Number of rows for all')
+    # print(picklefile2.shape[0])
+    travel_times_meta_new = preprocessTT(picklefile2)
+    final_travel_times = pd.merge(picklefile1, travel_times_meta_new, on='measurementSiteReference', how='left')
+    print(final_travel_times)
+
+    # Load all data
+    # try:
+    #     travel_time_data = pd.read_pickle(TT_FILE)
+    #     print("Success!")
+    # except:
+    #     print("Couldn't find compact travel time file.")
+    #     travel_time_data = storeTT()
+    
+    # # Load watergraafsmeer
+    # try:
+    #     travel_time_watergraafsmeer = pd.read_pickle(TT_WATERGRAAFSMEER_FILE)
+    #     print("Success!")
+    # except:
+    #     print("Couldn't find compact travel time file.")
+    #     travel_time_watergraafsmeer = storeTTWatergraafsmeer()
+    # print(travel_time_watergraafsmeer.head)
+
     # try:
     #     travel_time_meta = pd.read_pickle(TT_META)
     #     print("Success!")
@@ -276,15 +289,3 @@ if __name__ == "__main__":
     #     print("Couldn't find compact travel time file.")
     #     travel_time_meta = readFiles()
     #readFiles()
-
-    # picklefile1 = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
-    # my_try = check_stationarity(picklefile1["avgTravelTime"])
-
-    # picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
-    # print('Number of rows for watergraafsmeer')
-    # print(picklefile1.shape[0])
-    # print('Number of rows for all')
-    # print(picklefile2.shape[0])
-    # travel_times_meta_new = preprocessTT(picklefile2)
-    # final_travel_times = pd.merge(picklefile1,travel_times_meta_new, on='measurementSiteReference')
-    # print(final_travel_times)
