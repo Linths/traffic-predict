@@ -112,10 +112,6 @@ def preprocessFlowData(data):
     data["periodStart"] = data["periodStart"].astype("datetime64")
     return data
 
-def checkStationarity(ts):
-    # Check stationarity of time signal
-    return
-
 def predictTT(ts):
     # If you do not want to change intervals, put everything on False
     # If you want to change the signal to a certain interval, set only that one to True
@@ -217,7 +213,7 @@ def predictTT(ts):
         # q_tuple[60*24*7-1] = 1
         q_tuple = tuple(q_tuple)
         periods = (8*60, 24*60, 4.8*60, 24*7*60)
-    # predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, q_tuple)
+    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, q_tuple)
     predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
@@ -244,17 +240,24 @@ def printPopularFrequencies(ts, fs):
 if __name__ == "__main__":
     print("Started")
 
-    # travel_time_watergraafsmeer = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
-    # ts = travel_time_watergraafsmeer["avgTravelTime"]
+    travel_time_watergraafsmeer = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
+    ts = travel_time_watergraafsmeer["avgTravelTime"]
+    #check_stationarity(ts)
+    ts_new = removeSeasonDifferencing(ts)
+    #predictTT(ts)
+    predictTT(ts_new)
+
+
     # plt.plot(ts)
     # plt.title("Original travel time of Watergraafsmeer")
     # plt.show()
     # plt.close()
     #
-    # predictTT(ts)
-    # checkStationarity(ts)
-    final_travel_times = pickle.load(open("data/travel_times_final.p", "rb"))
-    print(final_travel_times.columns)
+    #
+
+
+    # final_travel_times = pickle.load(open("data/travel_times_final.p", "rb"))
+    # print(final_travel_times.columns)
 
     # plt.plot(final_travel_times["avgTravelTime"])
     # plt.title("Original travel time of Watergraafsmeer")

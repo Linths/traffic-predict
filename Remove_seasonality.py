@@ -37,22 +37,22 @@ def check_stationarity(timeseries):
 
 def removeSeasonDecomposition(dataframe):
     dataframe_log = np.log(dataframe)
-    decomposition = seasonal_decompose(dataframe[-100:])
+    decomposition = seasonal_decompose(dataframe[-1200:])
     trend = decomposition.trend
     seasonal = decomposition.seasonal
     residual = decomposition.resid
 
     # Select the most recent weeks
-    dataframe_log_select = dataframe_log[-100:]
+    dataframe_log_select = dataframe_log[-1200:]
 
     plt.subplot(411)
     plt.plot(dataframe_log_select.index.to_pydatetime(), dataframe_log_select.values, label='Original')
     plt.legend(loc='best')
     plt.subplot(412)
-    plt.plot(dataframe_log_select.index.to_pydatetime(), trend[-100:].values, label='Trend')
+    plt.plot(dataframe_log_select.index.to_pydatetime(), trend[-1200:].values, label='Trend')
     plt.legend(loc='best')
     plt.subplot(413)
-    plt.plot(dataframe_log_select.index.to_pydatetime(), seasonal[-100:].values, label='Seasonality')
+    plt.plot(dataframe_log_select.index.to_pydatetime(), seasonal[-1200:].values, label='Seasonality')
     plt.legend(loc='best')
     plt.subplot(414)
     plt.plot(dataframe_log_select.index.to_pydatetime(), residual[-1200:].values, label='Residuals')
