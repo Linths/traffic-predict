@@ -218,7 +218,9 @@ if __name__ == "__main__":
     #readFiles()
 
     picklefile1 = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
-    my_try = check_stationarity(picklefile1["avgTravelTime"])
+    removeSeasonDifferencing(picklefile1["avgTravelTime"])
+
+    #my_try = check_stationarity(picklefile1["avgTravelTime"])
 
     # picklefile2 = pickle.load(open("data/travel_times_meta.p", "rb"))
     # print('Number of rows for watergraafsmeer')

@@ -3,8 +3,14 @@ import matplotlib.pyplot as plt
 import random
 import seaborn as sns
 import numpy as np
+import sys
+import collections
+import itertools
 from scipy import stats
-from random import randint
+from scipy.stats import mode
+from scipy.spatial.distance import squareform
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 def check_stationarity(timeseries):
     # Determing rolling statistics
@@ -26,7 +32,7 @@ def check_stationarity(timeseries):
                           index=['Test Statistic', 'p-value', '#Lags Used', 'Number of Observations Used'])
     for key, value in dickey_fuller_test[4].items():
         dfresults['Critical Value (%s)' % key] = value
-    #print(dfresults)
+    print(dfresults)
     return dfresults
 
 def removeSeasonDecomposition(dataframe):
