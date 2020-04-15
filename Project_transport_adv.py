@@ -123,11 +123,28 @@ def predictTT(ts):
     HALFHOURLY = False
     SHORTLY = False # Every 5 minutes
 
-    # plt.plot(ts, color='blue')
+    plt.plot(ts.index.to_pydatetime(), ts, color='blue')
     ts = ts.replace(-1.0, np.nan) #0.000001)
     ts = ts.interpolate(method='time')
-    # plt.close()
+    plt.plot(ts.index.to_pydatetime(), ts, color='orange')
+    plt.title("Interpolated travel time of Watergraafsmeer")
+    plt.show()
+    plt.close()
     ts.index = pd.DatetimeIndex(ts.index).to_period('min') #, freq='m')
+
+    fs = 1/60
+    if DAILY:
+        forget_last = 7
+    elif HOURLY:
+        forget_last = 24 * 7
+    elif HALFHOURLY:
+        forget_last = 24 * 7 * 2
+    elif SHORTLY:
+        forget_last = 12 * 23 * 7 #-276 -312 -10
+    else:
+        forget_last = 60 * 24 * 7
+    printPopularFrequencies(ts[:-forget_last], fs)
+
     if DAILY:
         ts = ts.resample('D').mean()
         fs = 1/(60*60*24)
@@ -140,45 +157,29 @@ def predictTT(ts):
     elif SHORTLY:
         ts = ts.resample('5min').mean()
         fs = 1/(60*5)
-    else:
-        fs = 1/60
-    
-    plt.plot(ts.index.to_timestamp(), ts, color='blue')
-    plt.plot(ts.index.to_timestamp(), ts, color='orange') #.shift(20)
-    plt.title("Interpolation")
-    plt.show()
+      
     ts.plot()
-    plt.title("Travel time with interpolation (and possibly interval conversion)")
+    plt.title("Travel time of Watergraafsmeer with interpolation\nand interval conversion")
     plt.show()
     plt.close()
-    # ts.dropna(inplace=True)
-    # ts = ts.to_numpy()
+
+    printPopularFrequencies(ts[:-forget_last], fs)
+    
     ts_log = np.log(ts)
     ts_log.index = ts.index
     ts_log.plot()
     plt.title("Travel time (log)")
     plt.show()
     plt.close()
+
     ts_log_diff = ts_log - ts_log.shift()
     ts_log_diff.index = ts.index
     ts_log_diff.dropna(inplace=True)
-    # ts_log_diff = ts_log - np.roll(ts_log, 1)
     ts_log_diff.plot()
     plt.title("Travel time (log diff)")
     plt.show()
     plt.close()
 
-    if DAILY:
-        forget_last = 7
-    elif HOURLY:
-        forget_last = 24 * 7
-    elif HALFHOURLY:
-        forget_last = 24 * 7 * 2
-    elif SHORTLY:
-        forget_last = 12 * 23 * 7 #-276 -312 -10
-    else:
-        forget_last = 60 * 24 * 7
-    printPopularFrequencies(ts[:-forget_last], fs)
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
     
     # predict.plotAcfPacf(ts_log_diff)
@@ -194,14 +195,17 @@ def predictTT(ts):
         q_tuple[8-1] = 1
         q_tuple = tuple(q_tuple)
         periods = (8, 24, 4.8, 24*7)
+        seasonal_order = (1,1,1,24) #24*7
     elif HALFHOURLY:
         p = 1
         q = 1
         q_tuple = None
+        seasonal_order = None
     elif SHORTLY:
         p = 2
         q = 2
         q_tuple = None
+        seasonal_order = None
     else:
         p = 3 #3 #2.6
         q = 3 #2 #2.35
@@ -216,8 +220,9 @@ def predictTT(ts):
         # q_tuple[60*24*7-1] = 1
         q_tuple = tuple(q_tuple)
         periods = (8*60, 24*60, 4.8*60, 24*7*60)
-    # predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, q_tuple)
-    predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
+        seasonal_order = None
+    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, seasonal_order=seasonal_order) #q_tuple)
+    # predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
     signal = ts.copy()

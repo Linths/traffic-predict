@@ -26,7 +26,7 @@ def plotAcfPacf(ts_log_diff, nlags=20):
     plt.tight_layout()
     plt.show()
 
-def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None):
+def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_order=None):
     last_steps = len(ts_log) #60 * 24
     new_steps = forget_last
     trainset = ts_log[:-forget_last]
@@ -37,7 +37,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None):
     results_AR = model.fit(disp=-1)  
     ts_log_diff.plot()
     results_AR.fittedvalues.plot()
-    plt.title('AR RSS: %.4f'% sum((results_AR.fittedvalues-ts_log_diff)**2))
+    plt.title('AR RSS: %.4f'% sum((results_AR.fittedvalues-ts_log_diff[:-forget_last])**2))
     plt.show()
     predicted = results_AR.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:], predicted[0]))
@@ -59,7 +59,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None):
     results_MA = model.fit(disp=-1)  
     plt.plot(ts_log_diff.to_numpy())
     plt.plot(results_MA.fittedvalues.to_numpy(), color='red')
-    plt.title('MA RSS: %.4f'% sum((results_MA.fittedvalues-ts_log_diff)**2))
+    plt.title('MA RSS: %.4f'% sum((results_MA.fittedvalues-ts_log_diff[:-forget_last])**2))
     plt.show()
     predicted = results_MA.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:], predicted[0]))
@@ -79,7 +79,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None):
     results_ARIMA = model.fit(disp=-1)  
     plt.plot(ts_log_diff.to_numpy())
     plt.plot(results_ARIMA.fittedvalues.to_numpy(), color='red')
-    plt.title('ARIMA RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff)**2))
+    plt.title('ARIMA RSS: %.4f'% sum((results_ARIMA.fittedvalues-ts_log_diff[:-forget_last])**2))
     plt.show()
     predicted = results_ARIMA.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:-forget_last], predicted[0]))
@@ -94,27 +94,27 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None):
     plt.title(f"ARIMA prediction of travel time")
     plt.show()
 
-    # Show in-sample predictions
-    predictions_ARIMA_diff = pd.Series(results_ARIMA.fittedvalues, copy=True)
-    predictions_ARIMA_diff_cumsum = predictions_ARIMA_diff.cumsum()
-    predictions_ARIMA_log = pd.Series(ts_log.iloc[0], index=ts_log.index)
-    predictions_ARIMA_log = predictions_ARIMA_log.add(predictions_ARIMA_diff_cumsum, fill_value=0)
-    predictions_ARIMA = np.exp(predictions_ARIMA_log)
-    plt.plot(ts.to_numpy(), color='blue')
-    plt.plot(predictions_ARIMA.to_numpy(), color='orange')
-    plt.title('RMSE: %.4f'% np.sqrt(sum((predictions_ARIMA-ts)**2)/len(ts)))
-    plt.show()
+    # # Show in-sample predictions
+    # predictions_ARIMA_diff = pd.Series(results_ARIMA.fittedvalues, copy=True)
+    # predictions_ARIMA_diff_cumsum = predictions_ARIMA_diff.cumsum()
+    # predictions_ARIMA_log = pd.Series(ts_log.iloc[0], index=ts_log.index)
+    # predictions_ARIMA_log = predictions_ARIMA_log.add(predictions_ARIMA_diff_cumsum, fill_value=0)
+    # predictions_ARIMA = np.exp(predictions_ARIMA_log)
+    # plt.plot(ts.to_numpy(), color='blue')
+    # plt.plot(predictions_ARIMA.to_numpy(), color='orange')
+    # plt.title('RMSE: %.4f'% np.sqrt(sum((predictions_ARIMA-ts)**2)/len(ts)))
+    # plt.show()
 
     # Not currently using q_tuple in SARIMAX
-    # if q_tuple == None:
-    #     return
+    if seasonal_order == None:
+        return
 
     # SARIMAX
-    model = SARIMAX(trainset, trend='c', order=(p, d, q), seasonal_order=(1,1,1,24)) # Doesn't seem to be a time trend
+    model = SARIMAX(trainset, trend='c', order=(p, d, q), seasonal_order=seasonal_order) # Doesn't seem to be a time trend
     results_SARIMAX = model.fit(disp=-1)  
     plt.plot(ts_log_diff.to_numpy())
     plt.plot(results_SARIMAX.fittedvalues.to_numpy(), color='red')
-    plt.title('SARIMAX RSS: %.4f'% sum((results_SARIMAX.fittedvalues-ts_log_diff)**2))
+    plt.title('SARIMAX RSS: %.4f'% sum((results_SARIMAX.fittedvalues-ts_log_diff[:-forget_last])**2))
     plt.show()
     predicted = results_SARIMAX.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:-forget_last], predicted[0]))
