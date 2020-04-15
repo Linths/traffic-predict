@@ -3,8 +3,14 @@ import matplotlib.pyplot as plt
 import random
 import seaborn as sns
 import numpy as np
+import sys
+import collections
+import itertools
 from scipy import stats
-from random import randint
+from scipy.stats import mode
+from scipy.spatial.distance import squareform
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.seasonal import seasonal_decompose
 
 def check_stationarity(timeseries):
     # Determing rolling statistics
@@ -26,27 +32,27 @@ def check_stationarity(timeseries):
                           index=['Test Statistic', 'p-value', '#Lags Used', 'Number of Observations Used'])
     for key, value in dickey_fuller_test[4].items():
         dfresults['Critical Value (%s)' % key] = value
-    #print(dfresults)
+    print(dfresults)
     return dfresults
 
 def removeSeasonDecomposition(dataframe):
     dataframe_log = np.log(dataframe)
-    decomposition = seasonal_decompose(dataframe[-100:])
+    decomposition = seasonal_decompose(dataframe[-1200:])
     trend = decomposition.trend
     seasonal = decomposition.seasonal
     residual = decomposition.resid
 
     # Select the most recent weeks
-    dataframe_log_select = dataframe_log[-100:]
+    dataframe_log_select = dataframe_log[-1200:]
 
     plt.subplot(411)
     plt.plot(dataframe_log_select.index.to_pydatetime(), dataframe_log_select.values, label='Original')
     plt.legend(loc='best')
     plt.subplot(412)
-    plt.plot(dataframe_log_select.index.to_pydatetime(), trend[-100:].values, label='Trend')
+    plt.plot(dataframe_log_select.index.to_pydatetime(), trend[-1200:].values, label='Trend')
     plt.legend(loc='best')
     plt.subplot(413)
-    plt.plot(dataframe_log_select.index.to_pydatetime(), seasonal[-100:].values, label='Seasonality')
+    plt.plot(dataframe_log_select.index.to_pydatetime(), seasonal[-1200:].values, label='Seasonality')
     plt.legend(loc='best')
     plt.subplot(414)
     plt.plot(dataframe_log_select.index.to_pydatetime(), residual[-1200:].values, label='Residuals')
