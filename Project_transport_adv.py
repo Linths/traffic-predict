@@ -154,6 +154,8 @@ def predictTT(ts):
     elif SHORTLY:
         ts = ts.resample('5min').mean()
         fs = 1/(60*5)
+
+    check_stationarity(ts, plot=False)
       
     ts.plot()
     plt.title("Travel time of Watergraafsmeer with interpolation\nand interval conversion")
@@ -176,6 +178,9 @@ def predictTT(ts):
     plt.title("Travel time (log diff)")
     plt.show()
     plt.close()
+
+    check_stationarity(ts_log_diff, plot=False)
+    removeSeasonDecomposition(ts_log_diff)
 
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
     
@@ -219,7 +224,7 @@ def predictTT(ts):
         periods = (8*60, 24*60, 4.8*60, 24*7*60)
         seasonal_order = None
     predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, seasonal_order=seasonal_order) #q_tuple)
-    # predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
+    predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
     signal = ts.copy()
@@ -247,11 +252,11 @@ if __name__ == "__main__":
 
     travel_time_watergraafsmeer = pickle.load(open("data/travel_times_compact_watergraafsmeer.p", "rb"))
     ts = travel_time_watergraafsmeer["avgTravelTime"]
-    #check_stationarity(ts)
-    ts_new = removeSeasonDifferencing(ts)
-    #predictTT(ts)
-    predictTT(ts_new)
-
+    # check_stationarity(ts)
+    # removeSeasonDifferencing(ts)
+    
+    predictTT(ts)
+ 
 
     # plt.plot(ts)
     # plt.title("Original travel time of Watergraafsmeer")
