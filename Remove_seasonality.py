@@ -36,7 +36,7 @@ def check_stationarity(timeseries, plot=True):
     print(dfresults)
     return dfresults
 
-def removeSeasonDecomposition(dataframe):
+def removeSeasonDecomposition(dataframe, title):
     dataframe.index=dataframe.index.to_timestamp()
     dataframe_log = np.log(dataframe)
     decomposition = seasonal_decompose(dataframe)
@@ -60,6 +60,8 @@ def removeSeasonDecomposition(dataframe):
     plt.plot(dataframe_log_select.index.to_pydatetime(), residual.values, label='Residuals')
     plt.legend(loc='best')
     plt.tight_layout()
+    plt.suptitle(title)
+    plt.tight_layout()
     plt.show()
     plt.close()
     return plt
@@ -72,7 +74,7 @@ def removeSeasonDifferencing(dataframe):
     dfresults = check_stationarity(dataframe_log_diff)
     return dfresults
 
-if __name__ == "__main__":
-    check_stationarity()
-    removeSeasonDecomposition()
-    removeSeasonDifferencing()
+# if __name__ == "__main__":
+    # check_stationarity()
+    # removeSeasonDecomposition()
+    # removeSeasonDifferencing()

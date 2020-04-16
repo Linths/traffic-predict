@@ -114,7 +114,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     results_SARIMAX = model.fit(disp=-1)  
     plt.plot(ts_log_diff.to_numpy())
     plt.plot(results_SARIMAX.fittedvalues.to_numpy(), color='red')
-    plt.title('SARIMAX RSS: %.4f'% sum((results_SARIMAX.fittedvalues-ts_log_diff[:-forget_last])**2))
+    plt.title('SARIMAX RSS: %.4f'% sum((results_SARIMAX.fittedvalues-ts_log_diff[:-(forget_last-1)])**2))
     plt.show()
     predicted = results_SARIMAX.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:-forget_last], predicted[0]))

@@ -180,7 +180,8 @@ def predictTT(ts):
     plt.close()
 
     check_stationarity(ts_log_diff, plot=False)
-    removeSeasonDecomposition(ts_log_diff)
+    removeSeasonDecomposition(ts, "Decomposition of the hourly travel time of Watergraafsmeer")
+    # removeSeasonDecomposition(ts[:forget_last], "Decomposition of the hourly travel time of Watergraafsmeer\\of one week")
 
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
     
@@ -190,7 +191,7 @@ def predictTT(ts):
         q = 1
         q_tuple = None
     elif HOURLY:
-        p = 1 #9
+        p = 19 #1 #9
         q = 1 #3
         q_tuple = 8*[0]
         q_tuple[1-1] = 1
