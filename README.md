@@ -14,4 +14,4 @@ Make sure you have Python 3.x and common packages like `pandas`, `numpy`, `matpl
 Run the code:  
 ```> python main.py```
 
-There is a lot of functionality (scattered in the code), be aware you might need to (un)comment lines throughout in the source to get exactly what you want.
+There is a lot of functionality (scattered in the code). Be aware you might need to (un)comment lines throughout the source to get exactly what you want.
