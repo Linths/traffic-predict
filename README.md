@@ -9,7 +9,7 @@ Making predictions regarding the average travel time as accurately as possible f
 ## Run it
 
 Install the [Dutch national road traffic](https://www.ndw.nu/) data set. Preferably the data from June-July 2016 to ensure compatibility.
-Make sure you have Python 3._x_ and common packages like `pandas`, `numpy`, `matplotlib.pyplot`, `statsmodels` and `sklearn`. Note you also need the package `tbats` which you can get [here](https://github.com/intive-DataScience/tbats).
+Make sure you have Python 3.x and common packages like `pandas`, `numpy`, `matplotlib.pyplot`, `statsmodels` and `sklearn`. Note you also need the package `tbats` which you can get [here](https://github.com/intive-DataScience/tbats).
 
 Run the code:  
 ```> python main.py```
