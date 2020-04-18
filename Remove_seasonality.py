@@ -61,7 +61,8 @@ def removeSeasonDecomposition(dataframe, title):
     plt.legend(loc='best')
     plt.tight_layout()
     plt.suptitle(title)
-    plt.tight_layout()
+    plt.subplots_adjust(top=0.85)
+    # plt.tight_layout()
     plt.show()
     plt.close()
     return plt

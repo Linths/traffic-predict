@@ -191,7 +191,7 @@ def predictTT(ts):
         q = 1
         q_tuple = None
     elif HOURLY:
-        p = 19 #1 #9
+        p = 1 #0 #19 #1 #9
         q = 1 #3
         q_tuple = 8*[0]
         q_tuple[1-1] = 1

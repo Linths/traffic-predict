@@ -114,7 +114,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     results_SARIMAX = model.fit(disp=-1)  
     plt.plot(ts_log_diff.to_numpy())
     plt.plot(results_SARIMAX.fittedvalues.to_numpy(), color='red')
-    plt.title('SARIMAX RSS: %.4f'% sum((results_SARIMAX.fittedvalues-ts_log_diff[:-(forget_last-1)])**2))
+    plt.title('SARIMA RSS: %.4f'% sum((results_SARIMAX.fittedvalues.to_numpy()-ts_log_diff[1:-forget_last+2].to_numpy())**2))
     plt.show()
     predicted = results_SARIMAX.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:-forget_last], predicted[0]))
@@ -126,7 +126,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     # ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci[:,0]), np.exp(ci[:,1]), color='b', alpha=.1)
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
-    plt.title(f"SARIMAX prediction of travel time")
+    plt.title(f"SARIMA prediction of travel time")
     plt.show()
 
 def tbats(ts, ts_log, ts_log_diff, forget_last, periods):
