@@ -113,9 +113,9 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     # SARIMAX
     model = SARIMAX(trainset, trend='c', order=(p, d, q), seasonal_order=seasonal_order) # Doesn't seem to be a time trend
     results_SARIMAX = model.fit(disp=-1)  
-    plt.plot(ts_log_diff.to_numpy())
+    plt.plot(ts_log.to_numpy())
     plt.plot(results_SARIMAX.fittedvalues.to_numpy(), color='red')
-    plt.title('SARIMA RSS: %.4f'% sum((results_SARIMAX.fittedvalues.to_numpy()-ts_log_diff[1:-forget_last+2].to_numpy())**2))
+    plt.title('SARIMA RSS: %.4f'% sum((results_SARIMAX.fittedvalues.to_numpy()-ts_log[:-forget_last].to_numpy())**2))
     plt.show()
     predicted = results_SARIMAX.forecast(steps=new_steps)
     # plt.plot(np.append(ts_log[-last_steps:-forget_last], predicted[0]))
@@ -142,7 +142,13 @@ def tbats(ts, ts_log, ts_log_diff, forget_last, periods):
         use_box_cox=False  # will not use Box-Cox
     )
     model = estimator.fit(trainset)
-    # Forecast 365 days ahead
+    # In-sample
+    plt.plot(ts_log.to_numpy())
+    plt.plot(model.y_hat, color='red')
+    plt.title('TBATS RSS: %.4f'% sum((model.y_hat-ts_log[:-forget_last].to_numpy())**2))
+    plt.show()
+
+    # Forecast ahead
     predicted = model.forecast(steps=forget_last, confidence_level=0.95)
     plt.plot(range(0, last_steps), np.exp(ts_log).to_numpy(), color='blue')
     plt.plot(range(last_steps-forget_last, last_steps), np.exp(predicted[0]), color='orange')

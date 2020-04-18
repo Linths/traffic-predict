@@ -225,7 +225,7 @@ def predictTT(ts):
         periods = (8*60, 24*60, 4.8*60, 24*7*60)
         seasonal_order = None
     predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, seasonal_order=seasonal_order) #q_tuple)
-    # predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
+    predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
     signal = ts.copy()
