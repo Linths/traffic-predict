@@ -140,7 +140,7 @@ def predictTT(ts):
         forget_last = 12 * 23 * 7 #-276 -312 -10
     else:
         forget_last = 60 * 24 * 7
-    printPopularFrequencies(ts[:-forget_last], fs)
+    printPopularFrequencies(ts[:-forget_last], fs, "DFT of travel time of Watergraafsmeer (train data)")
 
     if DAILY:
         ts = ts.resample('D').mean()
@@ -162,12 +162,12 @@ def predictTT(ts):
     plt.show()
     plt.close()
 
-    printPopularFrequencies(ts[:-forget_last], fs)
+    printPopularFrequencies(ts[:-forget_last], fs, "DFT of hourly travel time of Watergraafsmeer (train data)")
     
     ts_log = np.log(ts)
     ts_log.index = ts.index
     ts_log.plot()
-    plt.title("Travel time (log)")
+    plt.title("Hourly travel time of Watergraafsmeer (log)")
     plt.show()
     plt.close()
 
@@ -175,12 +175,12 @@ def predictTT(ts):
     ts_log_diff.index = ts.index
     ts_log_diff.dropna(inplace=True)
     ts_log_diff.plot()
-    plt.title("Travel time (log diff)")
+    plt.title("Hourly travel time of Watergraafsmeer (log diff)")
     plt.show()
     plt.close()
 
     check_stationarity(ts_log_diff, plot=False)
-    removeSeasonDecomposition(ts, "Decomposition of the hourly travel time of Watergraafsmeer")
+    removeSeasonDecomposition(ts[forget_last:], "Decomposition of the hourly travel time of Watergraafsmeer (train data)")
     # removeSeasonDecomposition(ts[:forget_last], "Decomposition of the hourly travel time of Watergraafsmeer\\of one week")
 
     predict.plotAcfPacf(ts_log_diff[:-forget_last])
@@ -225,7 +225,7 @@ def predictTT(ts):
         periods = (8*60, 24*60, 4.8*60, 24*7*60)
         seasonal_order = None
     predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, seasonal_order=seasonal_order) #q_tuple)
-    predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
+    # predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
     signal = ts.copy()
@@ -234,17 +234,22 @@ def applyFFT(ts, fs=1/60):
     x = np.fft.fftfreq(len(signal), d=1/fs)
     return x, abs(f)/len(signal)
 
-def printPopularFrequencies(ts, fs):
+def printPopularFrequencies(ts, fs, title):
     x, y = applyFFT(ts, fs)
     i = 0
-    for popular_freq, amplitude in sorted(zip(x,y), reverse=True, key=lambda x: x[1])[:200]:
+    show = 10
+    for popular_freq, amplitude in sorted(zip(x,y), reverse=True, key=lambda x: x[1])[:2*show]:
         if i%2 == 0:
             print(f"#{i//2+1} most popular frequency is every {(1/popular_freq)/60/60} hours [{amplitude}]")
         i += 1
+    # Only plot one side of the mirrored graph
+    mid = len(x)//2
+    x = x[:mid]
+    y = y[:mid]
     plt.plot(x, y)
     ax = plt.gca()
     ax.set_xlim(0)
-    plt.title("DFT of travel time of Watergraafsmeer")
+    plt.title(title)
     plt.show()
     plt.close()
 

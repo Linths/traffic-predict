@@ -5,6 +5,7 @@ from statsmodels.tsa.stattools import acf, pacf
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from tbats import TBATS, BATS
+from sklearn.metrics import mean_absolute_error
 
 def plotAcfPacf(ts_log_diff, nlags=20):
     lag_acf = acf(ts_log_diff, nlags=nlags)
@@ -50,7 +51,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     # xx = ts_log.iloc[-1].loc[:, "periodStart"].values #['periodStart']
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
-    plt.title(f"AR prediction of travel time")
+    plt.title(f"AR prediction of travel time (MAE: %.4f)"% mean_absolute_error(np.exp(ts_log).to_numpy()[-forget_last:], np.exp(predicted[0])))
     plt.show()
     plt.close()
 
@@ -71,7 +72,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci[:,0]), np.exp(ci[:,1]), color='b', alpha=.1)
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
-    plt.title(f"MA prediction of travel time")
+    plt.title(f"MA prediction of travel time (MAE: %.4f)"% mean_absolute_error(np.exp(ts_log).to_numpy()[-forget_last:], np.exp(predicted[0])))
     plt.show()
     
     # ARIMA
@@ -91,7 +92,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci[:,0]), np.exp(ci[:,1]), color='b', alpha=.1)
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
-    plt.title(f"ARIMA prediction of travel time")
+    plt.title(f"ARIMA prediction of travel time (MAE: %.4f)"% mean_absolute_error(np.exp(ts_log).to_numpy()[-forget_last:], np.exp(predicted[0])))
     plt.show()
 
     # # Show in-sample predictions
@@ -126,7 +127,7 @@ def arima(ts, ts_log, ts_log_diff, p, d, q, forget_last, q_tuple=None, seasonal_
     # ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci[:,0]), np.exp(ci[:,1]), color='b', alpha=.1)
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
-    plt.title(f"SARIMA prediction of travel time")
+    plt.title(f"SARIMA prediction of travel time (MAE: %.4f)"% mean_absolute_error(np.exp(ts_log).to_numpy()[-forget_last:], np.exp(predicted)))
     plt.show()
 
 def tbats(ts, ts_log, ts_log_diff, forget_last, periods):
@@ -136,9 +137,9 @@ def tbats(ts, ts_log, ts_log_diff, forget_last, periods):
 
     # Fit the model
     estimator = TBATS(
-        seasonal_periods=periods#,
-        # use_arma_errors=False,  # shall try only models without ARMA
-        # use_box_cox=False  # will not use Box-Cox
+        seasonal_periods=periods,
+        use_arma_errors=False,  # shall try only models without ARMA
+        use_box_cox=False  # will not use Box-Cox
     )
     model = estimator.fit(trainset)
     # Forecast 365 days ahead
@@ -150,7 +151,7 @@ def tbats(ts, ts_log, ts_log_diff, forget_last, periods):
     ax.fill_between(range(last_steps-forget_last, last_steps), np.exp(ci['lower_bound']), np.exp(ci['upper_bound']), color='b', alpha=.1)
     plt.ylim(-2, np.max(350))
     plt.axvline(x=last_steps-forget_last, color='red')
-    plt.title(f"TBATS prediction of travel time")
+    plt.title(f"TBATS prediction of travel time (MAE: %.4f)"% mean_absolute_error(np.exp(ts_log).to_numpy()[-forget_last:], np.exp(predicted[0])))
     plt.show()
     print(model.summary())
     # print(predicted)
