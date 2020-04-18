@@ -36,6 +36,20 @@ def check_stationarity(timeseries, plot=True):
     print(dfresults)
     return dfresults
 
+def getTrend(dataframe):
+    dataframe.index=dataframe.index.to_timestamp()
+    dataframe_log = np.log(dataframe)
+    decomposition = seasonal_decompose(dataframe)
+    trend = decomposition.trend
+    return trend
+
+def getResiduals(dataframe):
+    dataframe.index=dataframe.index.to_timestamp()
+    dataframe_log = np.log(dataframe)
+    decomposition = seasonal_decompose(dataframe)
+    residuals = decomposition.resid
+    return residuals
+
 def removeSeasonDecomposition(dataframe, title):
     dataframe.index=dataframe.index.to_timestamp()
     dataframe_log = np.log(dataframe)

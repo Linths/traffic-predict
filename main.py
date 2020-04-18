@@ -7,7 +7,7 @@ from scipy import stats
 from random import randint
 import pickle
 import predict
-from Remove_seasonality import check_stationarity, removeSeasonDecomposition, removeSeasonDifferencing
+from seasonality import *
 
 TT_FILE = "data/travel_times_compact.p"
 TT_WATERGRAAFSMEER_FILE = "data/travel_times_compact_watergraafsmeer.p"
@@ -224,7 +224,7 @@ def predictTT(ts):
         q_tuple = tuple(q_tuple)
         periods = (8*60, 24*60, 4.8*60, 24*7*60)
         seasonal_order = None
-    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, seasonal_order=seasonal_order) #q_tuple)
+    predict.arima(ts, ts_log, ts_log_diff, p, 1, q, forget_last, seasonal_order=seasonal_order, exog=resid) #q_tuple)
     predict.tbats(ts, ts_log, ts_log_diff, forget_last, periods)
 
 def applyFFT(ts, fs=1/60):
